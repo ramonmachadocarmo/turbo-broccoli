@@ -1,0 +1,30 @@
+service: serverless-debugging
+
+plugins:
+  - serverless-esbuild
+  - serverless-offline
+
+custom:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: true
+    keepNames: true
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  # stage: ${opt:state}
+  timeout: 30
+  environment:
+    # STAGE: ${self:provider.stage}
+    dev: STAGE
+
+functions:
+  GetAll:
+    handler: index.GetAll
+    events:
+      - http:
+          method: GET
+          path: /getAll
+          cors: true

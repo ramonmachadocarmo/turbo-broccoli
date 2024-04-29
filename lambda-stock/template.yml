@@ -1,0 +1,221 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  monarch-stock-service
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 256
+
+Resources:
+  GetAll:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src
+      Handler: index.GetAll
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Events:
+        GetAll:
+          Type: Api
+          Properties:
+            Path: /getAll
+            Method: GET
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref StockTB
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints:
+          - index.ts
+  GetById:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src
+      Handler: index.GetById
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Events:
+        GetById:
+          Type: Api
+          Properties:
+            Path: /getById/{id}
+            Method: GET
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref StockTB
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints:
+          - index.ts
+  Save:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src
+      Handler: index.Create
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Events:
+        Create:
+          Type: Api
+          Properties:
+            Path: /post
+            Method: POST
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref StockTB
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints:
+          - index.ts
+  Delete:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src
+      Handler: index.Delete
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Events:
+        Delete:
+          Type: Api
+          Properties:
+            Path: /delete/{id}
+            Method: DELETE
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref StockTB
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints:
+          - index.ts
+  Patch:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src
+      Handler: index.Patch
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Events:
+        Patch:
+          Type: Api
+          Properties:
+            Path: /patch/{id}
+            Method: PATCH
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref StockTB
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints:
+          - index.ts
+  SetMovement:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src
+      Handler: index.SetMovement
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Events:
+        Patch:
+          Type: Api
+          Properties:
+            Path: /setMovement
+            Method: POST
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MovementTB
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints:
+          - index.ts
+  GetByStockAndProduct:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src
+      Handler: index.GetByStockAndProduct
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Events:
+        Patch:
+          Type: Api
+          Properties:
+            Path: /getByStockAndProduct/{stockId}/{productId}
+            Method: get
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MovementTB
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints:
+          - index.ts
+
+  StockTB:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "stockTB"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+      Tags:
+        - Key: "project"
+          Value: "monarch"
+        - Key: "env"
+          Value: "dev"
+  MovementTB:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "movementTB"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+      Tags:
+        - Key: "project"
+          Value: "monarch"
+        - Key: "env"
+          Value: "dev"
+
+Outputs:
+  WebEndpoint:
+    Description: "API Gateway endpoint URL for Prod stage"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
